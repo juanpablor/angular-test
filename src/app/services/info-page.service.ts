@@ -28,7 +28,6 @@ export class InfoPageService {
           .subscribe( (resp: any[] ) => {
             this.loaded = false;
             this.team = resp;
-            console.log(resp);
           });
    }
 }

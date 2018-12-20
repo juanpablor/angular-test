@@ -6,21 +6,62 @@ import { ProductInter } from '../interfaces/products.interface';
   providedIn: 'root'
 })
 export class ProductsService {
-
-  products: ProductInter[] = [];
   loaded = true;
+  products: ProductInter[] = [];
+  productsFiltered: ProductInter[] = [];
 
   constructor( private http: HttpClient) {
     this.ProductsService();
    }
 
    private ProductsService(){
-    this.http.get('https://angular-portfolio-7287a.firebaseio.com/products_idx.json')
-      .subscribe((resp: ProductInter[] ) => {
-        this.products = resp;
-        this.loaded = false;
-        console.log(this.products);
+
+    return new Promise( (resolve, reject) => {
+      this.http.get('https://angular-portfolio-7287a.firebaseio.com/products_idx.json')
+        .subscribe((resp: ProductInter[] ) => {
+          this.products = resp;
+          this.loaded = false;
+          resolve();
+        });      
+    });
+
+   }
+   loadDetails( id:string ){
+     return this.http.get(`https://angular-portfolio-7287a.firebaseio.com/products/${ id }.json`);
+
+   }
+   searchItems(searchParam: string){
+
+    if(this.products.length === 0){
+      this.ProductsService().then( ()=>{
+        this.filterItems(searchParam);
       });
+    } else {
+      this.filterItems(searchParam);
+    }
+
+    // this.productsFiltered = this.products.filter(product => {
+    //     return true;
+    // })
+    // console.log(this.productsFiltered);
    }
 
+   private filterItems( searchParam: string){
+    this.productsFiltered = [];
+    searchParam = searchParam.toLocaleLowerCase();
+
+    this.products.forEach( prod =>{
+
+      const titleLowerCase = prod.titulo.toLocaleLowerCase();
+
+      if( prod.categoria.indexOf(searchParam) >= 0 || titleLowerCase.indexOf(searchParam) >= 0 ){
+        
+        this.productsFiltered.push( prod );
+        console.log(this.productsFiltered);
+
+
+      }
+    });
+    // console.log(this.products);
+   }
 }
